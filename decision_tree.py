@@ -33,7 +33,10 @@ class Decision_tree:
     def fit(self, X, y):
         self._create_thresholds(X)
         self._grow_tree(X,y,0)
+        te = self._compute_training_error(X)
+        return te
         
+ 
         
     def predict(self, X):
         pass
@@ -41,11 +44,51 @@ class Decision_tree:
 
         
     ###----funzioni albero---------
+    def _compute_training_error(self,X):
+        return self.mistakes/X.shape[0] 
+    
     def _grow_tree(self,X,y,depth):
+        
+        #stopping criteria
+        if len(set(y['class']))==1:
+            leaf_value = self._most_common_label(y)
+            return Node(value=leaf_value)
+        
+        if depth >= self.max_depth:
+            leaf_value = self._most_common_label(y)
+            self.mistakes+= y.size - y.value_counts()[leaf_value]
+            return Node(value=leaf_value)
+        
         best_feature, best_threshold, best_gain = self._best_split(X, y)
-        print(best_feature, best_threshold, best_gain)
+        
+        print(f'Internal node: {best_feature} with {best_threshold}')
+        
+        X_column = X[best_feature]
+        idxs_no_nan = X_column.dropna().index
+        idxs_nan= X_column[X_column.isna()].index
+        
+        continuous = self._is_continuous(X_column)
+        
+        left_idxs, right_idxs = self._split(X_column.loc[idxs_no_nan], best_threshold, continuous)
+        
+        if (len(left_idxs)>len(right_idxs)):
+            left_idxs = np.concatenate((left_idxs, idxs_nan))
+        else:
+            right_idxs = np.concatenate((right_idxs, idxs_nan))
+        
+        left_child = self._grow_tree(X.loc[left_idxs], y.loc[left_idxs], depth+1)
+        right_child = self._grow_tree(X.loc[right_idxs], y.loc[right_idxs], depth+1)
+        return Node(feature= best_feature, threshold= best_threshold, left = left_child, right=right_child )
+    
 
-
+    def _most_common_label(self, y):
+        counts = y['class'].value_counts()
+        num_pos = counts.get(1,0)
+        num_neg = counts.get(0,0)
+        if num_pos > num_neg:
+            return 1
+        else:
+            return 0
         
 
     def _best_split(self, X, y):
