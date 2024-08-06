@@ -12,8 +12,9 @@ class Decision_tree:
         self.max_leaves = max_leaves
         self.min_samples_split = min_samples_split
         self.mistakes = 0
-        self.n_bins = 20
+        self.n_bins = 50
         self.thresholds = {}
+        self.root = None
       
     ###----funzioni helper-------
     def _is_continuous(self, X_column):
@@ -32,18 +33,34 @@ class Decision_tree:
     ###----funzioni public---------
     def fit(self, X, y):
         self._create_thresholds(X)
-        self._grow_tree(X,y,0)
-        te = self._compute_training_error(X)
-        return te
+        self.root = self._grow_tree(X,y,0)
+        t_e = self._compute_training_error(X)
+        return t_e
         
  
         
     def predict(self, X):
-        pass
+        if self.root is None:
+            raise Exception('Tree not fitted')
+        predictions = []
+        for _, row in X.iterrows():  # Itera su ogni riga del DataFrame X
+            prediction = self._traverse_tree(row, self.root)
+            predictions.append(prediction)
+        return predictions
+
     ###--------------------------     
 
         
     ###----funzioni albero---------
+    def _traverse_tree(self, x, node):
+        if node.is_leaf():
+            return node.value
+        
+        if x[node.feature] == node.threshold:
+            return self._traverse_tree(x, node.left)
+        else:
+            return self._traverse_tree(x, node.right)
+    
     def _compute_training_error(self,X):
         return self.mistakes/X.shape[0] 
     
@@ -61,7 +78,7 @@ class Decision_tree:
         
         best_feature, best_threshold, best_gain = self._best_split(X, y)
         
-        print(f'Internal node: {best_feature} with {best_threshold}')
+        #print(f'Internal node: {best_feature} with {best_threshold}')
         
         X_column = X[best_feature]
         idxs_no_nan = X_column.dropna().index
