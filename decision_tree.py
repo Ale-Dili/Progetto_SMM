@@ -33,6 +33,7 @@ class Decision_tree:
         
     ###----funzioni public---------
     def fit(self, X, y):
+        self.mistakes = 0
         self._create_thresholds(X)
         self.root = self._grow_tree(X, y, 0)
         t_e = self._compute_training_error(X)
