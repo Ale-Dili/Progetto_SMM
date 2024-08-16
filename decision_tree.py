@@ -179,7 +179,7 @@ class Decision_tree:
     def _entropy(self, p):
         if p == 0 or p == 1:
             return 0
-        return -p * log2(p) - (1 - p) * log2(1 - p)
+        return -(p/2) * log2(p) - ((1 - p)/2) * log2(1 - p)
 
     def _gini(self, p):
         return 2 * p * (1 - p)
