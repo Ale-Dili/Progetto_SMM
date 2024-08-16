@@ -32,16 +32,19 @@ y_final_test = fix_label(y_final_test)
 print('-- Dataset loaded --')
 ##-------------
 param_grid = {
-    'max_depth': [20,30,32], 
-    'min_samples_split': [2,5,10],
+    'max_depth': [25,27,30], 
+    'min_samples_split': [1,2,5],
     'criterion' : ['gini', 'entropy', 'sqrt_split'],
-    'min_impurity_decrease' : [0.0005,0.001]
+    'min_impurity_decrease' : [0.001,0.0005]
 }
 
 N_FOLDS = 5
 
 #(max_depth, min_sample, criterion, min_impurity):{accuracy: int, precision: int, recall: int, f1: int}
 metrics = {}
+
+best_accuracy = 0
+best_combo = None
 
 for max_depth in param_grid['max_depth']:
     for min_samples_split in param_grid['min_samples_split']:
@@ -88,7 +91,28 @@ for max_depth in param_grid['max_depth']:
                     'f1': np.mean(skf_f1)
                 }
                 
+                if np.mean(skf_accuracies) > best_accuracy:
+                    best_accuracy = np.mean(skf_accuracies)
+                    best_combo = (max_depth, min_samples_split, criterion, min_impurity_decrease)
 
+print(f'-- ENDING TRAINING --') 
+model = decision_tree.Decision_tree(splitting_criteria = best_combo[2], max_depth = best_combo[0], min_samples_split=best_combo[1], min_impurity_decrease = best_combo[3])             
+model.fit(X,y)
+y_pred = model.predict(X_final_test)
+#compute metrics
+accuracy = accuracy_score(y_final_test, y_pred)
+precision = precision_score(y_final_test, y_pred)
+recall = recall_score(y_final_test, y_pred)
+f1 = f1_score(y_final_test, y_pred)
+#print
+print(f'--Best combo: {best_combo}')
+print(f'    Accuracy: {accuracy}')
+print(f'    Precision: {precision}')
+print(f'    Recall: {recall}')
+print(f'    F1: {f1}')
+
+with open('trained_model.pkl', 'wb') as f:  
+    pickle.dump(model, f) 
                     
-with open('metrics.pkl', 'wb') as f:  # open a text file
-    pickle.dump(metrics, f) # serialize the list
+with open('metrics.pkl', 'wb') as f:  
+    pickle.dump(metrics, f) 
