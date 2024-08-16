@@ -57,19 +57,19 @@ class Decision_tree:
             return node.value
         
         if pd.isna(x[node.feature]):
-             return self._traverse_tree(x, node.right)
+             return self._traverse_tree(x, node.left)
 
  
         if isinstance(x[node.feature], float):
             if x[node.feature] > node.threshold:
-                return self._traverse_tree(x, node.left)
-            else:
                 return self._traverse_tree(x, node.right)
+            else:
+                return self._traverse_tree(x, node.left)
         else:
             if x[node.feature] == node.threshold:
-                return self._traverse_tree(x, node.left)
-            else:
                 return self._traverse_tree(x, node.right)
+            else:
+                return self._traverse_tree(x, node.left)
   
     
     def _compute_training_error(self, X):
@@ -153,8 +153,8 @@ class Decision_tree:
 
 
     def _split(self, X_column, threshold):
-        left_idxs = X_column.index[X_column > threshold] if self._is_continuous(X_column) else X_column.index[X_column == threshold]
-        right_idxs = X_column.index[X_column <= threshold] if self._is_continuous(X_column) else X_column.index[X_column != threshold]
+        left_idxs = X_column.index[X_column <= threshold] if self._is_continuous(X_column) else X_column.index[X_column != threshold]
+        right_idxs = X_column.index[X_column > threshold] if self._is_continuous(X_column) else X_column.index[X_column == threshold]
         
         return left_idxs, right_idxs
                 
