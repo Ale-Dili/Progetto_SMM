@@ -172,8 +172,8 @@ class Decision_tree:
             return self._gini(p_pos)
         elif self.splitting_criteria == 'entropy':
             return self._entropy(p_pos)
-        elif self.splitting_criteria =='sqrt_split':
-            return self._sqrt_split(p_pos)
+        elif self.splitting_criteria =='std_dev':
+            return self._std_dev(p_pos)
     
     
     def _entropy(self, p):
@@ -184,5 +184,5 @@ class Decision_tree:
     def _gini(self, p):
         return 2 * p * (1 - p)
 
-    def _sqrt_split(self, p):
+    def _std_dev(self, p):
         return sqrt(p*(1-p))

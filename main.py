@@ -34,7 +34,7 @@ print('-- Dataset loaded --')
 param_grid = {
     'max_depth': [25,27,30], 
     'min_samples_split': [1,2,5],
-    'criterion' : ['gini', 'entropy', 'sqrt_split'],
+    'criterion' : ['gini', 'entropy', 'std_dev'],
     'min_impurity_decrease' : [0.001,0.0005]
 }
 
