@@ -7,7 +7,7 @@ from numpy import sqrt
 
 class Decision_tree:
     
-    def __init__(self, splitting_criteria='gini', max_depth=3, min_samples_split=2, min_impurity_decrease=0.001):
+    def __init__(self, splitting_criteria='gini', max_depth=3, min_samples_split=2, min_impurity_decrease=0.001, is_forest=False, seed=88):
         self.splitting_criteria = splitting_criteria
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
@@ -15,7 +15,12 @@ class Decision_tree:
         self.n_bins = 50
         self.thresholds = {}
         self.root = None
-        self.mistakes = 0  # Initialize mistakes here
+        self.mistakes = 0 
+        self.is_forest = is_forest
+        self.seed = seed
+        np.random.seed(seed)
+
+        
       
     ###----funzioni helper-------
     def _is_continuous(self, X_column):
@@ -93,7 +98,13 @@ class Decision_tree:
             self.mistakes += y.size - y.value_counts()[leaf_value]
             return Node(value=leaf_value)
         
-        best_feature, best_threshold, best_gain = self._best_split(X, y)
+        if self.is_forest:
+            feature_idxs = np.random.choice(X.shape[1], int(sqrt(X.shape[1])), replace=False)
+            best_feature, best_threshold, best_gain = self._best_split(X.iloc[:,feature_idxs], y)
+        else:
+            best_feature, best_threshold, best_gain = self._best_split(X, y)
+        
+        
         
         if best_feature is None or best_gain < self.min_impurity_decrease:
             leaf_value = self._most_common_label(y)
@@ -105,6 +116,7 @@ class Decision_tree:
         left_idxs, right_idxs = self._split(X_column, best_threshold)
         
         left_child = self._grow_tree(X.loc[left_idxs], y.loc[left_idxs], depth + 1)
+
         right_child = self._grow_tree(X.loc[right_idxs], y.loc[right_idxs], depth + 1)
         return Node(feature=best_feature, threshold=best_threshold, left=left_child, right=right_child)
  
@@ -116,11 +128,13 @@ class Decision_tree:
     def _best_split(self, X, y):
         best_gain = 0
         best_feature, best_threshold = None, None
-        
+        count=0
         for colname in X.columns:
             X_column = X[colname]
             continuous = self._is_continuous(X_column)
             for threshold in self.thresholds[colname]:
+                count+=1
+                
                 gain = self._information_gain(y, X_column, threshold, continuous)
                 if gain > best_gain:
                     best_gain = gain
@@ -156,6 +170,10 @@ class Decision_tree:
         left_idxs = X_column.index[X_column <= threshold] if self._is_continuous(X_column) else X_column.index[X_column != threshold]
         right_idxs = X_column.index[X_column > threshold] if self._is_continuous(X_column) else X_column.index[X_column == threshold]
         
+        #Remove duplicates because of using .loc
+        left_idxs = list(set(left_idxs))
+        right_idxs = list(set(right_idxs))
+
         return left_idxs, right_idxs
                 
                 
