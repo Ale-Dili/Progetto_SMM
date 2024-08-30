@@ -1,6 +1,5 @@
-import importlib
+
 import decision_tree
-importlib.reload(decision_tree)  # Ricarica il modulo
 from sklearn.model_selection import (train_test_split, KFold, StratifiedKFold, KFold,LeaveOneOut)
 import numpy as np
 from ucimlrepo import fetch_ucirepo 
@@ -8,6 +7,8 @@ from ucimlrepo import fetch_ucirepo
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 import pickle
+
+SEED = 88
 
 def fix_label(y):
         y['class'] = y['class'].apply(lambda x: 1 if x == 'e' else 0)
@@ -23,7 +24,7 @@ y_tot = mushroom.data.targets
 
 
 
-X, X_final_test, y, y_final_test = train_test_split(X_tot, y_tot, test_size=0.15, random_state=88, shuffle=True)
+X, X_final_test, y, y_final_test = train_test_split(X_tot, y_tot, test_size=0.15, random_state=SEED, shuffle=True)
 
 
 y = fix_label(y)

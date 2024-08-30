@@ -6,7 +6,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 
 import pickle
 
-SEED = 42
+SEED = 44
 
 def fix_label(y):
         y['class'] = y['class'].apply(lambda x: 1 if x == 'e' else 0)
@@ -31,8 +31,12 @@ y_test = fix_label(y_test)
 print('-- Dataset loaded --')
 ##-------------
 
-forest = random_forest.Random_Forest(n_trees=15,seed=SEED)
-forest.fit(X, y)
+forest = random_forest.Random_Forest(n_trees=29,seed=SEED)
+oob_score = forest.fit(X, y)
+
+print(f'OOB score: {oob_score}')
+
+
 
 predictions = forest.predict(X_test)
 #accuracy recall precision f1
@@ -45,3 +49,6 @@ print(f'Accuracy: {accuracy}')
 print(f'Precision: {precision}')
 print(f'Recall: {recall}')
 print(f'F1: {f1}')
+
+with open('trained_model_rf.pkl', 'wb') as f:  
+    pickle.dump(forest, f) 

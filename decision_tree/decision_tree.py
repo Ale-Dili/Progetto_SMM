@@ -99,7 +99,7 @@ class Decision_tree:
             return Node(value=leaf_value)
         
         if self.is_forest:
-            feature_idxs = np.random.choice(X.shape[1], int(sqrt(X.shape[1])), replace=False)
+            feature_idxs = np.random.choice(X.shape[1], int(sqrt(X.shape[1]))+1, replace=False)
             best_feature, best_threshold, best_gain = self._best_split(X.iloc[:,feature_idxs], y)
         else:
             best_feature, best_threshold, best_gain = self._best_split(X, y)
